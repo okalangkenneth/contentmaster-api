@@ -1,0 +1,6 @@
+@ContentMasterAPI.API_HostAddress = http://localhost:5290
+
+GET {{ContentMasterAPI.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
