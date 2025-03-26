@@ -20,6 +20,11 @@ namespace ContentMasterAPI.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add this code to use the PORT environment variable
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+            builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+
             // Add services to the container
             ConfigureServices(builder.Services, builder.Configuration);
 
