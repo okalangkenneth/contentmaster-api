@@ -163,6 +163,10 @@ namespace ContentMasterAPI.API
 
         private static void ConfigureApp(WebApplication app, IWebHostEnvironment env)
         {
+            app.UseStaticFiles();
+
+
+
             // Configure the HTTP request pipeline
             if (env.IsDevelopment())
             {
@@ -174,13 +178,14 @@ namespace ContentMasterAPI.API
                 app.UseHsts();
             }
 
-            // Enable Swagger
+            
             // Enable Swagger
             app.UseSwagger(c =>
             {
                 app.UseSwagger(c =>
                 {
                     c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0; // This forces Swagger to use the 2.0 spec
+
                 });                                                                    
             });
 
@@ -212,6 +217,7 @@ namespace ContentMasterAPI.API
 
             // Use routing and authorization
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             // Map GraphQL endpoint
