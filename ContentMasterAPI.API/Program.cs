@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using HotChocolate.AspNetCore;
+using System.Reflection;
 
 
 
@@ -94,6 +95,14 @@ namespace ContentMasterAPI.API
                     }
                 });
 
+                // Optional: Configure Swagger to use XML comments
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
+
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -168,7 +177,7 @@ namespace ContentMasterAPI.API
 
 
             // Configure the HTTP request pipeline
-            if (env.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) // Allow Swagger in production
             {
                 app.UseDeveloperExceptionPage();
             }
