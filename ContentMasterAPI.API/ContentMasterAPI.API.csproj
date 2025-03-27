@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <Target Name="Publish" AfterTargets="Build">
+    <Exec Command="dotnet publish -c Release -o ./bin/Release/net8.0/publish" />
+  </Target>
+  
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
