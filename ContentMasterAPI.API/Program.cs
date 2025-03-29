@@ -226,7 +226,7 @@ namespace ContentMasterAPI.API
 
             // Use routing and authorization
             app.UseRouting();
-            app.UseAuthentication();
+            // app.UseAuthentication();
             app.UseAuthorization();
 
             // Map GraphQL endpoint
