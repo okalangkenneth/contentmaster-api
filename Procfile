@@ -1,1 +1,1 @@
-﻿web: cd $PORT && dotnet ContentMasterAPI.API.dll
+﻿web: dotnet ContentMasterAPI.API.dll

@@ -11,6 +11,9 @@
     <UserSecretsId>70ac3b90-a874-447e-869c-2dba86449a2d</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputType>Exe</OutputType>
+    <PublishSingleFile>true</PublishSingleFile>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
