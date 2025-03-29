@@ -1,1 +1,1 @@
-﻿web: dotnet ContentMasterAPI.API/bin/Release/net8.0/ContentMasterAPI.API.dll
+﻿web: cd $PORT && dotnet ContentMasterAPI.API.dll
