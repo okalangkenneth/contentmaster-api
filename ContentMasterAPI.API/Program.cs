@@ -6,12 +6,9 @@ using ContentMasterAPI.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
-using HotChocolate.AspNetCore;
 using System.Reflection;
-
-
-
+using System.Text;
+using Path = System.IO.Path; 
 
 namespace ContentMasterAPI.API
 {
@@ -21,33 +18,26 @@ namespace ContentMasterAPI.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add this code to use the PORT environment variable
-            var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-            builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
-
-            // Add services to the container
+            // 1. Configure Services FIRST
             ConfigureServices(builder.Services, builder.Configuration);
 
+            // 2. Build Application
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline
+            // 3. Configure Middleware Pipeline
             ConfigureApp(app, app.Environment);
 
-            app.Run();
+            // 4. Configure PORT and START APPLICATION
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+            app.Run($"http://*:{port}");
         }
 
         private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
-            // Add controllers
             services.AddControllers();
-
-            // Add this line with your other service registrations:
             services.AddScoped<IContentAnalysisService, ContentAnalysisService>();
 
-            
-
-            // Add HotChocolate GraphQL services
+            // GraphQL Configuration
             services
                 .AddGraphQLServer()
                 .AddQueryType(d => d.Name("Query"))
@@ -55,10 +45,7 @@ namespace ContentMasterAPI.API
                 .AddTypeExtension<AnalyticsQueries>()
                 .AddType<ContentType>();
 
-
-
-
-            // Configure JWT Authentication
+            // JWT Authentication
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -75,15 +62,12 @@ namespace ContentMasterAPI.API
                     };
                 });
 
-            // Add Swagger
+            // Swagger Configuration
             services.AddEndpointsApiExplorer();
-
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-
-                    
                     Title = "ContentMaster API",
                     Version = "v1",
                     Description = "A modern content management API with AI-driven capabilities",
@@ -95,15 +79,14 @@ namespace ContentMasterAPI.API
                     }
                 });
 
-                // Optional: Configure Swagger to use XML comments
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
                 {
                     c.IncludeXmlComments(xmlPath);
                 }
 
-                // Add JWT Authentication to Swagger
+                // JWT Security Definition
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -128,7 +111,7 @@ namespace ContentMasterAPI.API
                     }
                 });
 
-                // Add RapidAPI key authentication to Swagger
+                // RapidAPI Security Definition
                 c.AddSecurityDefinition("RapidAPI", new OpenApiSecurityScheme
                 {
                     Description = "RapidAPI Key Authentication",
@@ -154,11 +137,11 @@ namespace ContentMasterAPI.API
                 });
             });
 
-            // Register services
+            // Service Registrations
             services.AddSingleton<IContentRepository, InMemoryContentRepository>();
             services.AddSingleton<IUsageTrackingService, UsageTrackingService>();
 
-            // Add CORS for RapidAPI
+            // CORS Configuration
             services.AddCors(options =>
             {
                 options.AddPolicy("RapidAPIPolicy", builder =>
@@ -172,14 +155,17 @@ namespace ContentMasterAPI.API
 
         private static void ConfigureApp(WebApplication app, IWebHostEnvironment env)
         {
-            app.UseStaticFiles();
+            // Exception Handling
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
-
-
-            // Configure the HTTP request pipeline
-            if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) // Allow Swagger in production
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ContentMaster API v1");
+                });
             }
             else
             {
@@ -187,54 +173,24 @@ namespace ContentMasterAPI.API
                 app.UseHsts();
             }
 
-            
-            // Enable Swagger
-            app.UseSwagger(c =>
-            {
-                app.UseSwagger(c =>
-                {
-                    c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0; // This forces Swagger to use the 2.0 spec
-
-                });                                                                    
-            });
-
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ContentMaster API v1");
-            });
-
-            // Use HTTPS redirection
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
-
-            // Use CORS
+            app.UseRouting();
             app.UseCors("RapidAPIPolicy");
 
-            // Use authentication before RapidAPI middleware
+            // Authentication & Authorization
             app.UseAuthentication();
+            app.UseAuthorization();
 
-            //// Use RapidAPI authentication middleware
-            //app.UseRapidApiAuthentication();
-
-            // To this:
+            // Conditional RapidAPI Middleware
             app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api/auth"),
                 appBuilder => {
                     appBuilder.UseRapidApiAuthentication();
                 });
 
-            // Use global error handling middleware
-            app.UseMiddleware<ErrorHandlingMiddleware>();
-
-            // Use routing and authorization
-            app.UseRouting();
-            // app.UseAuthentication();
-            app.UseAuthorization();
-
-            // Map GraphQL endpoint
-            app.MapGraphQL();
-
-            // Map controllers
+            // Endpoint Configuration
             app.MapControllers();
+            app.MapGraphQL();
         }
     }
 }
-

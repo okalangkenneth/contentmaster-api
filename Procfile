@@ -1,1 +1,1 @@
-﻿web: dotnet ContentMasterAPI.API/bin/Release/net8.0/publish/ContentMasterAPI.API.dll --urls=http://*:${PORT}
+﻿web: dotnet ContentMasterAPI.API.dll --urls=http://*:${PORT}
