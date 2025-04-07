@@ -14,7 +14,7 @@ RUN dotnet restore
 # Copy all source files
 COPY . .
 
-# Build and publish the application
+# Publish as self-contained application
 RUN dotnet publish "ContentMasterAPI.API/ContentMasterAPI.API.csproj" -c Release -o /app/publish
 
 # Final stage
@@ -28,8 +28,8 @@ ENV ASPNETCORE_URLS=http://+:8080
 # Expose the port
 EXPOSE 8080
 
-# Create startup script
-RUN echo '#!/bin/bash\nls -la\nif [ -f "ContentMasterAPI.API.dll" ]; then\n  dotnet ContentMasterAPI.API.dll\nelse\n  echo "DLL not found!"\n  ls -la\nfi' > start.sh && \
+# Create a better startup script
+RUN echo '#!/bin/bash\nls -la\nif [ -f "ContentMasterAPI.API.dll" ]; then\n  dotnet ContentMasterAPI.API.dll\nelif [ -f "ContentMasterAPI.API" ]; then\n  ./ContentMasterAPI.API\nelse\n  echo "Neither DLL nor executable found!"\n  ls -la\nfi' > start.sh && \
     chmod +x start.sh
 
 # Start using the script
