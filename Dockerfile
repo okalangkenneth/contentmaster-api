@@ -2,31 +2,31 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy csproj files and restore dependencies
-COPY ["ContentMasterAPI.API/ContentMasterAPI.API.csproj", "ContentMasterAPI.API/"]
-COPY ["ContentMasterAPI.Core/ContentMasterAPI.Core.csproj", "ContentMasterAPI.Core/"]
-COPY ["ContentMasterAPI.Infrastructure/ContentMasterAPI.Infrastructure.csproj", "ContentMasterAPI.Infrastructure/"]
-RUN dotnet restore "ContentMasterAPI.API/ContentMasterAPI.API.csproj"
+# Copy solution file first to properly restore projects
+COPY *.sln ./
+COPY ContentMasterAPI.API/*.csproj ./ContentMasterAPI.API/
+COPY ContentMasterAPI.Core/*.csproj ./ContentMasterAPI.Core/
+COPY ContentMasterAPI.Infrastructure/*.csproj ./ContentMasterAPI.Infrastructure/
+RUN dotnet restore
 
-# Copy all source code and build the application
+# Copy everything else and build
 COPY . .
-WORKDIR "/src/ContentMasterAPI.API"
-RUN dotnet build "ContentMasterAPI.API.csproj" -c Release -o /app/build
+RUN dotnet publish -c Release -o /app/publish ./ContentMasterAPI.API/ContentMasterAPI.API.csproj
 
-# Publish stage
-FROM build AS publish
-RUN dotnet publish "ContentMasterAPI.API.csproj" -c Release -o /app/publish
-
-# Final stage - use the ASP.NET runtime image which is smaller
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Final stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Set environment variables
+# Environment variables
 ENV ASPNETCORE_URLS=http://+:8080
+ENV PORT=8080
 
 # Expose the port
 EXPOSE 8080
 
-# Start the application
+# Verify files exist
+RUN ls -la
+
+# Set the entry point
 ENTRYPOINT ["dotnet", "ContentMasterAPI.API.dll"]
