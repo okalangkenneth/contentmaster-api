@@ -14,11 +14,17 @@ RUN dotnet restore
 # Copy all source files
 COPY . .
 
-# Publish as self-contained application
-RUN dotnet publish "ContentMasterAPI.API/ContentMasterAPI.API.csproj" -c Release -o /app/publish
+# Publish as self-contained application for Linux
+RUN dotnet publish "ContentMasterAPI.API/ContentMasterAPI.API.csproj" \
+    -c Release \
+    -o /app/publish \
+    --self-contained true \
+    --runtime linux-x64 \
+    /p:PublishTrimmed=false \
+    /p:PublishSingleFile=false
 
-# Final stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# Final stage - use a minimal base image
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
@@ -28,9 +34,8 @@ ENV ASPNETCORE_URLS=http://+:8080
 # Expose the port
 EXPOSE 8080
 
-# Create a better startup script
-RUN echo '#!/bin/bash\nls -la\nif [ -f "ContentMasterAPI.API.dll" ]; then\n  dotnet ContentMasterAPI.API.dll\nelif [ -f "ContentMasterAPI.API" ]; then\n  ./ContentMasterAPI.API\nelse\n  echo "Neither DLL nor executable found!"\n  ls -la\nfi' > start.sh && \
-    chmod +x start.sh
+# Verify files exist
+RUN ls -la
 
-# Start using the script
-ENTRYPOINT ["./start.sh"]
+# Start the application
+ENTRYPOINT ["./ContentMasterAPI.API"]
