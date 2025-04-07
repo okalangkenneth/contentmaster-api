@@ -22,17 +22,15 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Remove global.json if it exists in the final container
-RUN rm -f global.json || true
-
 # Environment variables
 ENV ASPNETCORE_URLS=http://+:8080
 
 # Expose the port
 EXPOSE 8080
 
-# Verify files exist (useful for debugging)
-RUN ls -la
+# Create startup script
+RUN echo '#!/bin/bash\nls -la\nif [ -f "ContentMasterAPI.API.dll" ]; then\n  dotnet ContentMasterAPI.API.dll\nelse\n  echo "DLL not found!"\n  ls -la\nfi' > start.sh && \
+    chmod +x start.sh
 
-# Start the application
-ENTRYPOINT ["dotnet", "ContentMasterAPI.API.dll"]
+# Start using the script
+ENTRYPOINT ["./start.sh"]
