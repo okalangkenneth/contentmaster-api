@@ -110,7 +110,7 @@ namespace ContentMasterAPI.API.Controllers
                 issuer: _configuration["Jwt:Issuer"] ?? "ContentMasterAPI",
                 audience: _configuration["Jwt:Audience"] ?? "ContentMasterAPIUsers",
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: credentials
             );
             
