@@ -31,15 +31,10 @@ namespace ContentMasterAPI.API.Middleware
             _logger = logger;
             _configuration = configuration;
             
-            // In a production environment, these would be loaded from a database or configuration
-            // For demo purposes, we're hardcoding some sample API keys with their subscription tiers
-            _apiKeys = new Dictionary<string, SubscriptionTier>
-            {
-                { "demo-basic-api-key", SubscriptionTier.Basic },
-                { "demo-pro-api-key", SubscriptionTier.Pro },
-                { "demo-ultra-api-key", SubscriptionTier.Ultra },
-                { "demo-mega-api-key", SubscriptionTier.Mega }
-            };
+            // TODO Phase 4: Replace with database lookup once PostgreSQL persistence is added.
+            // For now, API keys and their tiers are loaded from configuration (appsettings / env vars).
+            // In production, set RapidApi__DemoKeys__<key>=<tier> environment variables.
+            _apiKeys = LoadApiKeysFromConfiguration(configuration);
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -151,8 +146,8 @@ namespace ContentMasterAPI.API.Middleware
             }
 
             // Pro tier can access content endpoints and basic analytics (sentiment only)
-            if (tier == SubscriptionTier.Pro && 
-                path.StartsWithSegments("/api/analytics") && 
+            if (tier == SubscriptionTier.Pro &&
+                path.StartsWithSegments("/api/analytics") &&
                 !path.Value.Contains("/sentiment"))
             {
                 return false;
@@ -160,6 +155,18 @@ namespace ContentMasterAPI.API.Middleware
 
             // Ultra and Mega tiers have access to all endpoints
             return true;
+        }
+
+        private Dictionary<string, SubscriptionTier> LoadApiKeysFromConfiguration(IConfiguration configuration)
+        {
+            var result = new Dictionary<string, SubscriptionTier>();
+            var section = configuration.GetSection("RapidApi:DemoKeys");
+            foreach (var child in section.GetChildren())
+            {
+                if (Enum.TryParse<SubscriptionTier>(child.Value, out var tier))
+                    result[child.Key] = tier;
+            }
+            return result;
         }
     }
 
