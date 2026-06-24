@@ -1,9 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <Target Name="Publish" AfterTargets="Build">
-    <Exec Command="dotnet publish -c Release -o ./bin/Release/net8.0/publish" />
-  </Target>
-  
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
@@ -11,12 +7,7 @@
     <UserSecretsId>70ac3b90-a874-447e-869c-2dba86449a2d</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <OutputType>Exe</OutputType>
-    <PublishSingleFile>true</PublishSingleFile>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <PublishTrimmed>true</PublishTrimmed>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,8 +26,5 @@
     <ProjectReference Include="..\ContentMasterAPI.Core\ContentMasterAPI.Core.csproj" />
     <ProjectReference Include="..\ContentMasterAPI.Infrastructure\ContentMasterAPI.Infrastructure.csproj" />
   </ItemGroup>
-  
-
-
 
 </Project>
