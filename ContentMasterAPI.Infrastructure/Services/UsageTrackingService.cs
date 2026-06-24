@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using ContentMasterAPI.Core.Interfaces;
+using ContentMasterAPI.Core.Models;
 
 namespace ContentMasterAPI.Infrastructure.Services
 {
@@ -116,15 +118,6 @@ namespace ContentMasterAPI.Infrastructure.Services
     }
 
     /// <summary>
-    /// Interface for the usage tracking service
-    /// </summary>
-    public interface IUsageTrackingService
-    {
-        Task<bool> TrackUsageAsync(string apiKey, string tier, string endpoint);
-        Task<UsageStatistics> GetUsageStatisticsAsync(string apiKey);
-    }
-
-    /// <summary>
     /// Internal class for tracking user usage
     /// </summary>
     internal class UserUsage
@@ -136,16 +129,4 @@ namespace ContentMasterAPI.Infrastructure.Services
         public Dictionary<string, int> EndpointUsage { get; set; }
     }
 
-    /// <summary>
-    /// Public class for returning usage statistics
-    /// </summary>
-    public class UsageStatistics
-    {
-        public string ApiKey { get; set; }
-        public string SubscriptionTier { get; set; }
-        public int DailyRequestCount { get; set; }
-        public int DailyQuota { get; set; }
-        public int RemainingRequests { get; set; }
-        public Dictionary<string, int> EndpointUsage { get; set; }
-    }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ContentMasterAPI.Core.Models;
 using ContentMasterAPI.Core.Interfaces;
-using ContentMasterAPI.Infrastructure.Services;
+using ContentMasterAPI.Core.Interfaces;
 
 namespace ContentMasterAPI.API.Controllers
 {

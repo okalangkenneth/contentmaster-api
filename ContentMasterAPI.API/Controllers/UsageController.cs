@@ -2,7 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using ContentMasterAPI.Infrastructure.Services;
+using ContentMasterAPI.Core.Interfaces;
+using ContentMasterAPI.Core.Models;
 using System.Collections.Generic;
 using ContentMasterAPI.API.Models;
 
