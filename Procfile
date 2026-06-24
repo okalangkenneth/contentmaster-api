@@ -1,1 +1,0 @@
-﻿web: dotnet ContentMasterAPI.API.dll --urls=http://*:${PORT}
