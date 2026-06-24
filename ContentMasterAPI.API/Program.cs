@@ -19,7 +19,7 @@ namespace ContentMasterAPI.API
             var builder = WebApplication.CreateBuilder(args);
 
             // 1. Configure Services FIRST
-            ConfigureServices(builder.Services, builder.Configuration);
+            ConfigureServices(builder.Services, builder.Configuration, builder.Environment);
 
             // 2. Build Application
             var app = builder.Build();
@@ -32,7 +32,7 @@ namespace ContentMasterAPI.API
             app.Run($"http://*:{port}");
         }
 
-        private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
         {
             services.AddControllers();
             services.AddScoped<IContentAnalysisService, ContentAnalysisService>();
@@ -46,6 +46,17 @@ namespace ContentMasterAPI.API
                 .AddType<ContentType>();
 
             // JWT Authentication
+            var jwtKey = configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                if (environment.IsDevelopment())
+                    throw new InvalidOperationException(
+                        "Jwt:Key is not configured. Add it to appsettings.Development.json or user secrets.");
+                else
+                    throw new InvalidOperationException(
+                        "Jwt:Key is not configured. Set the JWT__Key environment variable in production.");
+            }
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -57,8 +68,7 @@ namespace ContentMasterAPI.API
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = configuration["Jwt:Issuer"],
                         ValidAudience = configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? "ContentMasterAPISecretKey1234567890!"))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                     };
                 });
 

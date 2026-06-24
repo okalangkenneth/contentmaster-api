@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\ContentMasterAPI.Core\ContentMasterAPI.Core.csproj" />
@@ -14,5 +14,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <!-- Phase 2: EfContentRepository requires EF Core (added then) -->
+  <!-- Phase 3: OpenAiContentAnalysisService replaced by ILlmService (added then) -->
+  <ItemGroup>
+    <Compile Remove="Data\ContentMasterDbContext.cs" />
+    <Compile Remove="Services\EfContentRepository.cs" />
+    <Compile Remove="Services\OpenAiContentAnalysisService.cs" />
+  </ItemGroup>
 
 </Project>
