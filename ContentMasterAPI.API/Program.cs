@@ -168,14 +168,17 @@ namespace ContentMasterAPI.API
             // Exception Handling
             app.UseMiddleware<ErrorHandlingMiddleware>();
 
+            // Always enable Swagger — this is a public API product
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ContentMaster API v1");
+                c.RoutePrefix = string.Empty; // Serve Swagger at root /
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ContentMaster API v1");
-                });
             }
             else
             {
