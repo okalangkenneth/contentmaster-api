@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContentMasterAPI.Infrastructure.Data
 {
-    /// <summary>
-    /// Entity Framework DbContext for ContentMaster API
-    /// </summary>
     public class ContentMasterDbContext : DbContext
     {
         public ContentMasterDbContext(DbContextOptions<ContentMasterDbContext> options) : base(options)
@@ -18,65 +15,55 @@ namespace ContentMasterAPI.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Content entity
             modelBuilder.Entity<Content>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                
+
                 entity.Property(e => e.Title)
                     .IsRequired()
                     .HasMaxLength(500);
-                
+
                 entity.Property(e => e.Body)
                     .IsRequired();
-                
+
                 entity.Property(e => e.ContentType)
                     .IsRequired()
                     .HasMaxLength(100);
-                
+
                 entity.Property(e => e.CreatedBy)
                     .IsRequired()
                     .HasMaxLength(256);
-                
+
                 entity.Property(e => e.Status)
                     .IsRequired()
                     .HasMaxLength(50);
 
-                // Configure Tags as JSON (SQL Server 2016+)
                 entity.Property(e => e.Tags)
-                    .HasConversion(
-                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                        v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions)null));
+                    .HasColumnType("jsonb");
 
-                // Configure Metadata as JSON (SQL Server 2016+)
                 entity.Property(e => e.Metadata)
-                    .HasConversion(
-                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                        v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions)null));
+                    .HasColumnType("jsonb");
 
-                // Indexes for better performance
                 entity.HasIndex(e => e.ContentType);
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => e.CreatedAt);
                 entity.HasIndex(e => e.CreatedBy);
             });
 
-            // Seed data
             SeedData(modelBuilder);
         }
 
         private void SeedData(ModelBuilder modelBuilder)
         {
-            var sampleContents = new[]
-            {
+            modelBuilder.Entity<Content>().HasData(
                 new Content
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
                     Title = "Getting Started with ContentMaster API",
-                    Body = "This is a comprehensive guide to help you get started with the ContentMaster API. It covers the basics of content management, AI-driven analytics, and GraphQL integration.",
+                    Body = "A comprehensive guide to content management, AI-driven analytics, and GraphQL integration.",
                     ContentType = "article",
-                    CreatedAt = DateTime.UtcNow.AddDays(-10),
-                    UpdatedAt = DateTime.UtcNow.AddDays(-10),
+                    CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     CreatedBy = "system",
                     Status = "published",
                     Tags = new List<string> { "guide", "getting-started", "api" },
@@ -90,12 +77,12 @@ namespace ContentMasterAPI.Infrastructure.Data
                 },
                 new Content
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
                     Title = "Advanced AI Analytics Features",
-                    Body = "Explore the powerful AI-driven features of ContentMaster API including sentiment analysis, automatic tagging, content categorization, and intelligent summarization. These features help you understand and organize your content automatically.",
+                    Body = "Sentiment analysis, automatic tagging, content categorization, and intelligent summarization.",
                     ContentType = "article",
-                    CreatedAt = DateTime.UtcNow.AddDays(-5),
-                    UpdatedAt = DateTime.UtcNow.AddDays(-3),
+                    CreatedAt = new DateTime(2025, 1, 6, 0, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = new DateTime(2025, 1, 8, 0, 0, 0, DateTimeKind.Utc),
                     CreatedBy = "system",
                     Status = "published",
                     Tags = new List<string> { "ai", "analytics", "sentiment-analysis", "auto-tagging" },
@@ -109,12 +96,12 @@ namespace ContentMasterAPI.Infrastructure.Data
                 },
                 new Content
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("c3d4e5f6-a7b8-9012-cdef-123456789012"),
                     Title = "Security Best Practices",
-                    Body = "Security is paramount for any API. This guide covers JWT authentication, RapidAPI integration, rate limiting, and other security best practices for the ContentMaster API.",
+                    Body = "RapidAPI key authentication, rate limiting, and other security best practices.",
                     ContentType = "article",
-                    CreatedAt = DateTime.UtcNow.AddDays(-2),
-                    UpdatedAt = DateTime.UtcNow.AddDays(-2),
+                    CreatedAt = new DateTime(2025, 1, 9, 0, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = new DateTime(2025, 1, 9, 0, 0, 0, DateTimeKind.Utc),
                     CreatedBy = "system",
                     Status = "draft",
                     Tags = new List<string> { "security", "authentication", "best-practices" },
@@ -126,9 +113,7 @@ namespace ContentMasterAPI.Infrastructure.Data
                     },
                     Version = 1
                 }
-            };
-
-            modelBuilder.Entity<Content>().HasData(sampleContents);
+            );
         }
     }
 }
