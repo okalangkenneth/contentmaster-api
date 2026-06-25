@@ -116,9 +116,9 @@ Before making any changes, capture the current broken state. This prevents accid
 
 | Field | Value |
 |-------|-------|
-| Last known clean build | 2026-06-24 |
+| Last known clean build | 2026-06-25 |
 | Build command | dotnet build ContentMasterAPI.sln |
-| Last run by Claude | 2026-06-24 |
+| Last run by Claude | 2026-06-25 |
 
 ### Current Build Errors
 ```
@@ -158,12 +158,12 @@ Track debt separately from bugs. Debt = known compromises, not errors.
 
 | ID     | Location                                  | Description                                                      | Severity | Safe to touch? |
 |--------|-------------------------------------------|------------------------------------------------------------------|----------|----------------|
-| TD-001 | Controllers/AuthController.cs             | Fake auth (admin/admin123) — remove entirely in Phase 1B         | High     | Yes (Phase 1B) |
+| TD-001 | Controllers/AuthController.cs             | Fake auth — RESOLVED Phase 1B, file deleted                      | High     | N/A            |
 | TD-002 | Infrastructure/Data/ContentMasterDbContext| EF DbContext exists but never registered in DI                   | High     | Yes (Phase 2)  |
 | TD-003 | Infrastructure/Services/OpenAiContentAnalysisService.cs | Stale OpenAI SDK — replace with ILlmService Phase 3 | High     | Yes (Phase 3)  |
 | TD-004 | Middleware/RapidApiMiddleware.cs          | UsageTrackingService never called from middleware                 | Med      | Yes (Phase 4)  |
-| TD-005 | Controllers/SubscriptionController.cs     | Domain models (Subscription, BillingDetails etc) defined in controller | Med | Yes (Phase 1B) |
-| TD-006 | Controllers/PaymentController.cs          | Domain models (PaymentMethod, Invoice etc) defined in controller | Med      | Yes (Phase 1B) |
+| TD-005 | Controllers/SubscriptionController.cs     | Models in controller — RESOLVED Phase 1B, moved to Core         | Med      | N/A            |
+| TD-006 | Controllers/PaymentController.cs          | Models in controller — RESOLVED Phase 1B, moved to Core         | Med      | N/A            |
 | TD-007 | Core/Interfaces/IContentRepository.cs    | Interface bloated with sync + duplicate GraphQL-specific methods  | Med      | Yes (Phase 2)  |
 | TD-008 | ContentMasterAPI.Tests/                   | Tests project has no .csproj — may be incomplete scaffold         | Med      | Yes (Phase 7)  |
 | TD-009 | Infrastructure/Services/OpenAiContentAnalysisService.cs | sync-over-async (.GetAwaiter().GetResult()) in GenerateTags, GenerateSummary, CategorizeContent | High | Yes (Phase 3) |
@@ -203,13 +203,17 @@ Track debt separately from bugs. Debt = known compromises, not errors.
   - Deleted 15 stale root-level deployment artifacts
   - Removed committed publish/ directory
   - Excluded Phase 2/3 stub files (EfContentRepository, ContentMasterDbContext, OpenAiContentAnalysisService) from build until their phases add required packages
+- Phase 1B: Auth simplification + domain model cleanup
+  - Deleted AuthController.cs (hardcoded admin/admin123 — TD-001 resolved)
+  - Removed /api/auth bypass from RapidAPI middleware pipeline
+  - Removed JWT Bearer Swagger security definition
+  - Moved 7 subscription domain models to Core (TD-005 resolved)
+  - Moved 4 payment domain models to Core (TD-006 resolved)
 
 ### 🔨 IN PROGRESS
-<!-- Current work -->
 
 ### ❌ REMAINING
 
-- Phase 1B: Auth simplification (remove JWT AuthController, RapidAPI keys as sole auth)
 - Phase 2: PostgreSQL persistence (port 5435, EF migrations, EfContentRepository)
 - Phase 3: AI service layer (ILlmService, OllamaLlmService, GroqLlmService)
 - Phase 4: RapidAPI integration (wire UsageTrackingService into middleware)
@@ -378,7 +382,7 @@ If only the conclusion → subagent. Keep in main session if you'll need the det
 
 ### ContentMasterAPI-Specific Rules
 - Auth model: RapidAPI keys only (X-RapidAPI-Key header). No internal user management.
-  The JWT AuthController is being removed in Phase 1B.
+  JWT AuthController was removed in Phase 1B.
 - AI provider switching: LLM__Provider env var controls "Ollama" vs "Groq".
   LLM__BaseUrl and LLM__ApiKey control the connection details.
 - Port 5435 reserved for PostgreSQL (avoids conflict with system PostgreSQL on 5432,
