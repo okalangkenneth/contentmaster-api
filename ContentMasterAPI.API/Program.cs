@@ -96,31 +96,6 @@ namespace ContentMasterAPI.API
                     c.IncludeXmlComments(xmlPath);
                 }
 
-                // JWT Security Definition
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new List<string>()
-                    }
-                });
-
                 // RapidAPI Security Definition
                 c.AddSecurityDefinition("RapidAPI", new OpenApiSecurityScheme
                 {
@@ -195,11 +170,8 @@ namespace ContentMasterAPI.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Conditional RapidAPI Middleware
-            app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api/auth"),
-                appBuilder => {
-                    appBuilder.UseRapidApiAuthentication();
-                });
+            // RapidAPI key authentication applies to all endpoints
+            app.UseRapidApiAuthentication();
 
             // Endpoint Configuration
             app.MapControllers();
