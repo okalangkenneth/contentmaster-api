@@ -6,9 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ContentMasterAPI.Infrastructure.Services
 {
-    /// <summary>
-    /// Entity Framework implementation of the content repository
-    /// </summary>
     public class EfContentRepository : IContentRepository
     {
         private readonly ContentMasterDbContext _context;
@@ -28,7 +25,7 @@ namespace ContentMasterAPI.Infrastructure.Services
                 .ToListAsync();
         }
 
-        public async Task<Content> GetByIdAsync(Guid id)
+        public async Task<Content?> GetByIdAsync(Guid id)
         {
             _logger.LogInformation("Getting content with ID {Id} from database", id);
             return await _context.Contents.FindAsync(id);
@@ -39,9 +36,7 @@ namespace ContentMasterAPI.Infrastructure.Services
             _logger.LogInformation("Creating new content with title {Title} in database", content.Title);
 
             if (content.Id == Guid.Empty)
-            {
                 content.Id = Guid.NewGuid();
-            }
 
             content.CreatedAt = DateTime.UtcNow;
             content.UpdatedAt = DateTime.UtcNow;
@@ -54,7 +49,7 @@ namespace ContentMasterAPI.Infrastructure.Services
             return content;
         }
 
-        public async Task<Content> UpdateAsync(Content content)
+        public async Task<Content?> UpdateAsync(Content content)
         {
             _logger.LogInformation("Updating content with ID {Id} in database", content.Id);
 
@@ -65,7 +60,6 @@ namespace ContentMasterAPI.Infrastructure.Services
                 return null;
             }
 
-            // Update properties
             existingContent.Title = content.Title;
             existingContent.Body = content.Body;
             existingContent.ContentType = content.ContentType;
@@ -106,21 +100,17 @@ namespace ContentMasterAPI.Infrastructure.Services
 
             var query = _context.Contents.AsQueryable();
 
-            // Apply search term filter
             if (!string.IsNullOrEmpty(searchTerm))
             {
+                var pattern = $"%{searchTerm}%";
                 query = query.Where(c =>
-                    EF.Functions.Contains(c.Title, searchTerm) ||
-                    EF.Functions.Contains(c.Body, searchTerm));
+                    EF.Functions.ILike(c.Title, pattern) ||
+                    EF.Functions.ILike(c.Body, pattern));
             }
 
-            // Apply content type filter
             if (!string.IsNullOrEmpty(contentType))
-            {
                 query = query.Where(c => c.ContentType == contentType);
-            }
 
-            // Apply tags filter
             if (tags != null && tags.Count > 0)
             {
                 foreach (var tag in tags)
@@ -136,17 +126,6 @@ namespace ContentMasterAPI.Infrastructure.Services
 
             _logger.LogInformation("Found {Count} content items matching search criteria", results.Count);
             return results;
-        }
-
-        // GraphQL-specific methods
-        public async Task<IEnumerable<Content>> GetAllContentsAsync()
-        {
-            return await GetAllAsync();
-        }
-
-        public async Task<Content> GetContentByIdAsync(Guid id)
-        {
-            return await GetByIdAsync(id);
         }
 
         public async Task<IEnumerable<Content>> GetContentsByTypeAsync(string contentType)
@@ -174,21 +153,6 @@ namespace ContentMasterAPI.Infrastructure.Services
                 .Where(c => c.CreatedBy == createdBy)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
-        }
-
-        // Synchronous methods for backward compatibility
-        public Content GetContentById(Guid id)
-        {
-            _logger.LogInformation("Getting content with ID {Id} from database (sync)", id);
-            return _context.Contents.Find(id);
-        }
-
-        public IEnumerable<Content> GetAllContent()
-        {
-            _logger.LogInformation("Getting all content items from database (sync)");
-            return _context.Contents
-                .OrderByDescending(c => c.CreatedAt)
-                .ToList();
         }
     }
 }

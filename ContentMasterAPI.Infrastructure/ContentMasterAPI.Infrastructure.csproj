@@ -21,11 +21,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!-- Phase 2: EfContentRepository requires EF Core (added then) -->
   <!-- Phase 3: OpenAiContentAnalysisService replaced by ILlmService (added then) -->
   <ItemGroup>
-    <Compile Remove="Data\ContentMasterDbContext.cs" />
-    <Compile Remove="Services\EfContentRepository.cs" />
     <Compile Remove="Services\OpenAiContentAnalysisService.cs" />
   </ItemGroup>
 
