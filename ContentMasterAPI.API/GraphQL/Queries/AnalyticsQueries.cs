@@ -1,4 +1,4 @@
-﻿using ContentMasterAPI.Core.Interfaces;
+using ContentMasterAPI.Core.Interfaces;
 using ContentMasterAPI.Core.Models;
 
 namespace ContentMasterAPI.API.GraphQL.Queries
@@ -12,7 +12,7 @@ namespace ContentMasterAPI.API.GraphQL.Queries
             [Service] IContentRepository repository,
             Guid contentId)
         {
-            var content = repository.GetContentById(contentId);
+            var content = await repository.GetByIdAsync(contentId);
             if (content == null)
                 return null;
 

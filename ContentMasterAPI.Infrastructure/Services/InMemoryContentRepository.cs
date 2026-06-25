@@ -31,7 +31,7 @@ namespace ContentMasterAPI.Infrastructure.Services
             return await Task.FromResult(_contents);
         }
 
-        public async Task<Content> GetByIdAsync(Guid id)
+        public async Task<Content?> GetByIdAsync(Guid id)
         {
             _logger.LogInformation("Getting content with ID {Id}", id);
             return await Task.FromResult(_contents.FirstOrDefault(c => c.Id == id));
@@ -54,7 +54,7 @@ namespace ContentMasterAPI.Infrastructure.Services
             return await Task.FromResult(content);
         }
 
-        public async Task<Content> UpdateAsync(Content content)
+        public async Task<Content?> UpdateAsync(Content content)
         {
             _logger.LogInformation("Updating content with ID {Id}", content.Id);
 
@@ -121,20 +121,6 @@ namespace ContentMasterAPI.Infrastructure.Services
             return await Task.FromResult(query.ToList());
         }
 
-        // GraphQL-specific methods - Added for GraphQL compatibility
-
-        public Task<IEnumerable<Content>> GetAllContentsAsync()
-        {
-            // Just an alias for GetAllAsync for GraphQL compatibility
-            return GetAllAsync();
-        }
-
-        public Task<Content> GetContentByIdAsync(Guid id)
-        {
-            // Just an alias for GetByIdAsync for GraphQL compatibility
-            return GetByIdAsync(id);
-        }
-
         public async Task<IEnumerable<Content>> GetContentsByTypeAsync(string contentType)
         {
             _logger.LogInformation("Getting content by type {ContentType}", contentType);
@@ -154,21 +140,6 @@ namespace ContentMasterAPI.Infrastructure.Services
             return await Task.FromResult(_contents.Where(c =>
                 c.CreatedBy.Equals(createdBy, StringComparison.OrdinalIgnoreCase)));
         }
-
-        // Add these synchronous methods for HotChocolate
-        public Content GetContentById(Guid id)
-        {
-            _logger.LogInformation("Getting content with ID {Id} (sync)", id);
-            return _contents.FirstOrDefault(c => c.Id == id);
-        }
-
-        public IEnumerable<Content> GetAllContent()
-        {
-            _logger.LogInformation("Getting all content items (sync)");
-            return _contents;
-        }
-
-
 
 
 
