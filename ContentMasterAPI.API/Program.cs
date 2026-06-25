@@ -3,12 +3,9 @@ using ContentMasterAPI.API.GraphQL.Types;
 using ContentMasterAPI.API.Middleware;
 using ContentMasterAPI.Core.Interfaces;
 using ContentMasterAPI.Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
-using System.Text;
-using Path = System.IO.Path; 
+using Path = System.IO.Path;
 
 namespace ContentMasterAPI.API
 {
@@ -44,33 +41,6 @@ namespace ContentMasterAPI.API
                 .AddTypeExtension<ContentQueries>()
                 .AddTypeExtension<AnalyticsQueries>()
                 .AddType<ContentType>();
-
-            // JWT Authentication
-            var jwtKey = configuration["Jwt:Key"];
-            if (string.IsNullOrEmpty(jwtKey))
-            {
-                if (environment.IsDevelopment())
-                    throw new InvalidOperationException(
-                        "Jwt:Key is not configured. Add it to appsettings.Development.json or user secrets.");
-                else
-                    throw new InvalidOperationException(
-                        "Jwt:Key is not configured. Set the JWT__Key environment variable in production.");
-            }
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = configuration["Jwt:Issuer"],
-                        ValidAudience = configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-                    };
-                });
 
             // Swagger Configuration
             services.AddEndpointsApiExplorer();
@@ -166,8 +136,6 @@ namespace ContentMasterAPI.API
             app.UseRouting();
             app.UseCors("RapidAPIPolicy");
 
-            // Authentication & Authorization
-            app.UseAuthentication();
             app.UseAuthorization();
 
             // RapidAPI key authentication applies to all endpoints
