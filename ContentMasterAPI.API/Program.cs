@@ -2,7 +2,9 @@ using ContentMasterAPI.API.GraphQL.Queries;
 using ContentMasterAPI.API.GraphQL.Types;
 using ContentMasterAPI.API.Middleware;
 using ContentMasterAPI.Core.Interfaces;
+using ContentMasterAPI.Infrastructure.Data;
 using ContentMasterAPI.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Path = System.IO.Path;
@@ -93,7 +95,16 @@ namespace ContentMasterAPI.API
             });
 
             // Service Registrations
-            services.AddSingleton<IContentRepository, InMemoryContentRepository>();
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrEmpty(connectionString))
+                throw new InvalidOperationException(
+                    "ConnectionStrings:DefaultConnection is not configured. " +
+                    "Set it in appsettings.Development.json or via the CONNECTIONSTRINGS__DEFAULTCONNECTION environment variable.");
+
+            services.AddDbContext<ContentMasterDbContext>(options =>
+                options.UseNpgsql(connectionString));
+
+            services.AddScoped<IContentRepository, EfContentRepository>();
             services.AddSingleton<IUsageTrackingService, UsageTrackingService>();
 
             // CORS Configuration
